@@ -1,12 +1,14 @@
 import type { EnvVars } from '@/types'
 
+
 const defaultConfig = {
   NODE_ENV: 'development',
   PORT: '3000',
   JWT_SECRET: 'your-super-secret-jwt-key-change-this-in-production',
   JWT_ACCESS_EXPIRES: '15m', 
   JWT_REFRESH_EXPIRES: '7d', 
-  BCRYPT_ROUNDS: '12'
+  BCRYPT_ROUNDS: '12',
+  DATABASE_URL:''
 }
 
 function getEnvVar(key: keyof EnvVars): string {
@@ -20,6 +22,7 @@ export const config = {
   JWT_ACCESS_EXPIRES: getEnvVar('JWT_ACCESS_EXPIRES'),
   JWT_REFRESH_EXPIRES: getEnvVar('JWT_REFRESH_EXPIRES'),
   BCRYPT_ROUNDS: parseInt(getEnvVar('BCRYPT_ROUNDS')),
+  DATABASE_URL: getEnvVar('DATABASE_URL'),
   
   IS_PRODUCTION: getEnvVar('NODE_ENV') === 'production',
   IS_DEVELOPMENT: getEnvVar('NODE_ENV') === 'development',

@@ -67,4 +67,5 @@ export interface EnvVars {
   JWT_ACCESS_EXPIRES: string;
   JWT_REFRESH_EXPIRES: string;
   BCRYPT_ROUNDS: string;
+  DATABASE_URL: string;
 }

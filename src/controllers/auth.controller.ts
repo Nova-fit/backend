@@ -16,9 +16,7 @@ auth.post('/register', async (c) => {
     password,
   });
   return c.json({ message: 'User registered', userId: user.id }, 201);
-});
-
-auth.post('/login', async (c) => {
+}).post('/login', async (c) => {
   const { email, password } = await c.req.json();
   const { user, tokens } = await authServices.loginUser(email, password);
   return c.json({ tokens, user });

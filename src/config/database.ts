@@ -28,14 +28,14 @@ class InMemoryDatabase {
   async updateUser(id: string, updates: Partial<User>): Promise<User | null> {
     const userIndex = this.users.findIndex(user => user.id === id)
     if (userIndex === -1) return null
-
+    if (userIndex === undefined) return null
     this.users[userIndex] = {
       ...this.users[userIndex],
       ...updates,
       updatedAt: new Date()
-    }
+    } as User
 
-    return this.users[userIndex]
+    return this.users[userIndex] as User
   }
 
   async deleteUser(id: string): Promise<boolean> {
@@ -84,7 +84,7 @@ class InMemoryDatabase {
       users: this.users.length,
       refreshTokens: this.refreshTokens.size,
       lastUserCreated: this.users.length > 0 
-        ? this.users[this.users.length - 1].createdAt 
+        ? this.users[this.users.length - 1]!.createdAt  
         : null
     }
   }
