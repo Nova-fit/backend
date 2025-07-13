@@ -4,7 +4,7 @@ import type { EnvVars } from '@/types'
 const defaultConfig = {
   NODE_ENV: 'development',
   PORT: '3000',
-  JWT_SECRET: 'your-super-secret-jwt-key-change-this-in-production',
+  JWT_SECRET: '',
   JWT_ACCESS_EXPIRES: '15m', 
   JWT_REFRESH_EXPIRES: '7d', 
   BCRYPT_ROUNDS: '12',
