@@ -5,7 +5,8 @@ import { TokenService } from "./token.services";
 import { db } from "@/db";
 import { eq } from "drizzle-orm";
 
-import { users } from "@/db/schema";
+import { users, profiles } from "@/db/schema";
+
 
 export class AuthServices {
   constructor() {}
@@ -31,7 +32,22 @@ export class AuthServices {
         updatedAt: users.updatedAt,
       });
 
-    return newUser!;
+      if (!newUser) {
+        throw new Error("Error al crear el usuario");
+      }
+
+      const [newProfile] = await db
+      .insert(profiles)
+      .values({
+        userId: newUser.id,
+      }).returning();
+
+
+      if (!newProfile) {
+        throw new Error("Error al crear el perfil");
+      }
+
+    return newUser;
     } catch (error) {
       throw new Error("Error al crear el usuario");
     }
