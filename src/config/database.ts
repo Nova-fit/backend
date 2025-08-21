@@ -1,6 +1,24 @@
 import type { User } from '@/types'
+import type { IDatabase, DatabaseStats, IDatabaseInitializer } from '@/interfaces/database.interface'
 
-class InMemoryDatabase {
+abstract class BaseDatabase implements IDatabase {
+  abstract createUser(userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User>
+  abstract findUserByEmail(email: string): Promise<User | null>
+  abstract findUserById(id: string): Promise<User | null>
+  abstract updateUser(id: string, updates: Partial<User>): Promise<User | null>
+  abstract deleteUser(id: string): Promise<boolean>
+  abstract getAllUsers(): Promise<User[]>
+  abstract getUserCount(): Promise<number>
+  abstract saveRefreshToken(token: string): Promise<void>
+  abstract isRefreshTokenValid(token: string): Promise<boolean>
+  abstract removeRefreshToken(token: string): Promise<void>
+  abstract removeAllRefreshTokensForUser(userId: string): Promise<void>
+  abstract getRefreshTokenCount(): Promise<number>
+  abstract clearAll(): Promise<void>
+  abstract getStats(): Promise<DatabaseStats>
+}
+
+class InMemoryDatabase extends BaseDatabase implements IDatabaseInitializer {
   private users: User[] = []
   private refreshTokens: Set<string> = new Set()
 
@@ -79,7 +97,7 @@ class InMemoryDatabase {
     this.refreshTokens.clear()
   }
 
-  async getStats() {
+  async getStats(): Promise<DatabaseStats> {
     return {
       users: this.users.length,
       refreshTokens: this.refreshTokens.size,
@@ -90,6 +108,7 @@ class InMemoryDatabase {
   }
 }
 
+export { BaseDatabase, InMemoryDatabase }
 export const db = new InMemoryDatabase()
 
 export async function initializeDatabase(): Promise<void> {

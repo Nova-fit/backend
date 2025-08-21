@@ -2,15 +2,17 @@ export interface User {
   id: string;
   email: string;
   password: string;
-  createdAt: Date;
-  updatedAt: Date;
+  isActive: boolean | null;
+  createdAt: Date  | null;
+  updatedAt: Date  | null;
 }
 
 export interface UserResponse {
   id: string;
   email: string;
-  createdAt: Date;
-  updatedAt: Date;
+  isActive: boolean | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 }
 
 export interface JWTPayload {

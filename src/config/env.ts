@@ -1,5 +1,9 @@
 import type { EnvVars } from '@/types'
+import dotenv from '@dotenvx/dotenvx';
 
+dotenv.config({
+    path:'.env'
+});
 
 const defaultConfig = {
   NODE_ENV: 'development',

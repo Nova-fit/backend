@@ -26,11 +26,10 @@ export const profiles = pgTable('profiles', {
 });
 
 // 3. Roles Table
-export const roles = pgTable('roles', {
+export const appRoles = pgTable('app_roles', {
   id: serial('id').primaryKey(),
   name: varchar('name', { length: 50 }).unique().notNull(),
 });
-
 // 4. Organizations Table
 export const organizations = pgTable('organizations', {
   id: serial('id').primaryKey(),
@@ -44,7 +43,7 @@ export const userOrganizations = pgTable('user_organizations', {
   id: serial('id').primaryKey(),
   userId: uuid('user_id').notNull().references(() => users.id),
   organizationId: integer('organization_id').notNull().references(() => organizations.id),
-  roleId: integer('role_id').notNull().references(() => roles.id),
+  roleId: integer('role_id').notNull().references(() => appRoles.id),
   joinedAt: timestamp('joined_at', { withTimezone: true }).defaultNow(),
 });
 
@@ -59,39 +58,3 @@ export const sessions = pgTable('sessions', {
   expiresAt: timestamp('expires_at', { withTimezone: true }),
   isRevoked: boolean('is_revoked').default(false),
 });
-
-
-
-export const userRelations = relations(users, ({ one, many }) => ({
-  profile: one(profiles),
-  sessions: many(sessions),
-  memberships: many(userOrganizations),
-}));
-
-export const profileRelations = relations(profiles, ({ one }) => ({
-  user: one(users, {
-    fields: [profiles.userId],
-    references: [users.id],
-  }),
-}));
-
-export const sessionRelations = relations(sessions, ({ one }) => ({
-  user: one(users, {
-    fields: [sessions.userId],
-    references: [users.id],
-  }),
-}));
-
-export const userOrgRelations = relations(userOrganizations, ({ one }) => ({
-  user: one(users, { fields: [userOrganizations.userId], references: [users.id] }),
-  org: one(organizations, { fields: [userOrganizations.organizationId], references: [organizations.id] }),
-  role: one(roles, { fields: [userOrganizations.roleId], references: [roles.id] }),
-}));
-
-export const organizationRelations = relations(organizations, ({ many }) => ({
-  members: many(userOrganizations),
-}));
-
-export const roleRelations = relations(roles, ({ many }) => ({
-  members: many(userOrganizations),
-}));
