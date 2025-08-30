@@ -1,19 +1,17 @@
-import { Context } from "hono";
-import { eq } from "drizzle-orm";
-import { db } from "@/db";
-import { profiles } from "@/db/schema";
-import { IProfileInsert } from "@/types/profile.type";
+import { ProfileService } from "@/services/profile.service";
 import { JWTPayload } from "@/types";
+import { IProfileInsert } from "@/types/profile.type";
+import { Context } from "hono";
+
+const profileService = new ProfileService();
 
 const getProfile = async (c: Context) => {
   const payload = c.get("jwtPayload");
-  const [profile] = await db
-    .select()
-    .from(profiles)
-    .where(eq(profiles.userId, payload.userId));
+  const profile = await profileService.getProfile(payload.userId);
+  
   if (!profile) return c.json({ error: "Profile not found" }, 404);
-
-  return c.json({ profile }, 200);
+  
+  return c.json( profile , 200);
 };
 
 const saveProfile = async (c: Context) => {
@@ -23,16 +21,7 @@ const saveProfile = async (c: Context) => {
    
     const profileData = (await c.req.json()) as IProfileInsert;
 
-  await db.insert(profiles)
-    .values({
-      userId: payload.userId,
-      firstName: profileData.firstName,
-      lastName: profileData.lastName,
-      phoneNumber: profileData.phoneNumber,
-      address: profileData.address,
-      birthDate: profileData.birthDate,
-      gender: profileData.gender,
-    })
+    await profileService.saveProfile(profileData, payload.userId);
   
    return c.json({  }, 200);
   } catch (error) {
@@ -46,19 +35,8 @@ const updateProfile = async (c: Context) => {
   try {
     const payload = c.get("jwtPayload");
 
-    const [nuevoPerfil] = await db
-      .update(profiles)
-      .set({
-        firstName: body.firstName,
-        lastName: body.lastName,
-        phoneNumber: body.phoneNumber,
-        address: body.address,
-        birthDate: body.birthDate,
-        gender: body.gender,
-      })
-      .where(eq(profiles.userId, payload.userId))
-      .returning();
-    return c.json({ message: "Perfil creado" }, 201);
+    await profileService.updateProfile(body, payload.userId);
+    return c.json({ message: "Perfil actualizado" }, 200);  
   } catch (dbError: any) {
     console.error("Error al guardar en BD:", dbError);
 
@@ -76,8 +54,8 @@ const updateProfile = async (c: Context) => {
 const deleteProfile = async (c: Context) => {
   const { userId } = c.get("jwtPayload");
   try {
-    await db.delete(profiles).where(eq(profiles.userId, userId));
-    return c.json({ message: "Su perfil fue eliminado exitosamente" }, 201);
+    await profileService.deleteProfile(userId);
+    return c.json({ message: "Su perfil fue eliminado exitosamente" }, 200);
   } catch (error) {
     return c.json(
       {

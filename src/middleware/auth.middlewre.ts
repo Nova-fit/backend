@@ -1,7 +1,5 @@
-import { verifyPassword } from '@/utils/password';
 import { Context } from 'hono';
 import { TokenService } from '@/services/token.services';
-import { JWTPayload } from '@/types';
 
 
 export const authMiddleware = async (c: Context, next: Function) => {
