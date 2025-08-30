@@ -56,7 +56,7 @@ export class TokenService {
       throw new Error('Tipo de token inválido')
     }
     
-    return payload
+    return payload as JWTPayload
   }
 
   /**

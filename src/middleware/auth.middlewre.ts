@@ -10,7 +10,7 @@ export const authMiddleware = async (c: Context, next: Function) => {
     return c.json({ error: 'Unauthorized' }, 401);
   }
 
-  const token = authHeader.split(' ')[1];
+  const token = authHeader.split(' ')[1] as string;
   
   try {
     const payload = await TokenService.verifyAccessToken(token);
