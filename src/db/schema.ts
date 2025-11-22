@@ -58,3 +58,6 @@ export const sessions = pgTable('sessions', {
   expiresAt: timestamp('expires_at', { withTimezone: true }),
   isRevoked: boolean('is_revoked').default(false),
 });
+
+
+export const IProfile = profiles.$inferInsert;

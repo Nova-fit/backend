@@ -1,12 +1,11 @@
-import { ProfileService } from "@/services/profile.service";
 import { JWTPayload } from "@/types";
 import { IProfileInsert } from "@/types/profile.type";
 import { Context } from "hono";
 
-const profileService = new ProfileService();
 
 const getProfile = async (c: Context) => {
   const payload = c.get("jwtPayload");
+  const profileService = c.get("profileService");
   const profile = await profileService.getProfile(payload.userId);
   
   if (!profile) return c.json({ error: "Profile not found" }, 404);
@@ -16,6 +15,7 @@ const getProfile = async (c: Context) => {
 
 const saveProfile = async (c: Context) => {
   const payload: JWTPayload = c.get("jwtPayload");
+  const profileService = c.get("profileService");   
 
  try {
    
@@ -34,6 +34,7 @@ const updateProfile = async (c: Context) => {
 
   try {
     const payload = c.get("jwtPayload");
+    const profileService = c.get("profileService");   
 
     await profileService.updateProfile(body, payload.userId);
     return c.json({ message: "Perfil actualizado" }, 200);  
@@ -52,6 +53,7 @@ const updateProfile = async (c: Context) => {
 };
 
 const deleteProfile = async (c: Context) => {
+  const profileService = c.get("profileService");   
   const { userId } = c.get("jwtPayload");
   try {
     await profileService.deleteProfile(userId);
