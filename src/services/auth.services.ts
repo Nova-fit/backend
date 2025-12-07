@@ -6,12 +6,13 @@ import { db } from "@/db";
 import { eq } from "drizzle-orm";
 
 import { users, profiles } from "@/db/schema";
+import { IAuthServices } from "@/model/auth/auth-services.interface";
 
 
-export class AuthServices {
+export class AuthServices implements IAuthServices {
   constructor() {}
 
-  async registerUser(input: {
+  async register(input: {
     email: string;
     password: string;
   }): Promise<UserWithoutPassword> {
@@ -53,7 +54,7 @@ export class AuthServices {
     }
   }
 
-  async loginUser(email: string, password: string): Promise<AuthResponse> {
+  async login(email: string, password: string): Promise<AuthResponse> {
     const [user] = (await db.select().from(users).where(eq(users.email, email)));
     if (!user) {
       throw new Error("Usuario no encontrado");

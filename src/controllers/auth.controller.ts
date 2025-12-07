@@ -1,16 +1,14 @@
-import { AuthServices } from "@/services/auth.services";
 import { Context } from "hono";
-
-const authServices = new AuthServices();
 
 export const register = async (c: Context) => {
   const { email, password } = (await c.req.json()) as {
     email: string;
     password: string;
   };
+  const authService = c.get('authService');
 
   try {
-    const user = await authServices.registerUser({
+    const user = await authService.register({
       email,
       password,
     });
@@ -23,7 +21,8 @@ export const register = async (c: Context) => {
 
 export const login = async (c: Context) => {
   const { email, password } = await c.req.json();
-  const { user, tokens } = await authServices.loginUser(email, password);
+  const authService = c.get('authService');
+  const { user, tokens } = await authService.login(email, password);
   return c.json({ tokens, user }, 200);
 };
 
