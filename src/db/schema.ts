@@ -92,19 +92,6 @@ export const permissions = pgTable("permissions", {
     .notNull(),
 });
 
-<<<<<<< Updated upstream
-// 6. Sessions Table
-export const sessions = pgTable('sessions', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  userId: uuid('user_id').notNull().references(() => users.id),
-  tokenHash: text('token_hash').notNull(),
-  ipAddress: varchar('ip_address', { length: 100 }),
-  userAgent: text('user_agent'),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-  expiresAt: timestamp('expires_at', { withTimezone: true }),
-  isRevoked: boolean('is_revoked').default(false),
-});
-=======
 // ==================== 5. ROLE_PERMISSIONS TABLE ====================
 export const rolePermissions = pgTable("role_permissions", {
   id: serial("id").primaryKey(),
@@ -412,4 +399,3 @@ export type NewMachine = typeof machines.$inferInsert;
 
 export type Session = typeof sessions.$inferSelect;
 export type NewSession = typeof sessions.$inferInsert;
->>>>>>> Stashed changes
