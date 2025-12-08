@@ -1,4 +1,4 @@
-import type { User } from '@/types'
+import type { User } from '@/model/types'
 import type { IDatabase, DatabaseStats, IDatabaseInitializer } from '@/interfaces/database.interface'
 
 abstract class BaseDatabase implements IDatabase {
@@ -30,7 +30,7 @@ class InMemoryDatabase extends BaseDatabase implements IDatabaseInitializer {
       createdAt: now,
       updatedAt: now
     }
-    
+
     this.users.push(user)
     return user
   }
@@ -101,8 +101,8 @@ class InMemoryDatabase extends BaseDatabase implements IDatabaseInitializer {
     return {
       users: this.users.length,
       refreshTokens: this.refreshTokens.size,
-      lastUserCreated: this.users.length > 0 
-        ? this.users[this.users.length - 1]!.createdAt  
+      lastUserCreated: this.users.length > 0
+        ? this.users[this.users.length - 1]!.createdAt
         : null
     }
   }
@@ -114,10 +114,10 @@ export const db = new InMemoryDatabase()
 export async function initializeDatabase(): Promise<void> {
   try {
     const userCount = await db.getUserCount()
-    
+
     if (userCount === 0) {
       console.log('🔄 Inicializando base de datos con datos de prueba...')
-      
+
       // Crear usuario de prueba (contraseña: "password123")
       await db.createUser({
         email: 'test@example.com',
