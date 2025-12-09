@@ -13,13 +13,17 @@ const getOrganization = async (c: Context) => {
     return c.json({ error: "Organization id is required" }, 400);
   }
 
-  const organization = await organizationService.getOrganization({
-    id: Number(id),
-  });
+  try {
+    const organization = await organizationService.getOrganization({
+      id: Number(id),
+    });
 
-  if (!organization) return c.json({ error: "Organization not found" }, 404);
+    if (!organization) return c.json({ error: "Organization not found" }, 404);
 
-  return c.json(organization, 200);
+    return c.json(organization, 200);
+  } catch (error) {
+    return c.json({ error: error }, 500);
+  }
 };
 
 const createOrganization = async (c: Context) => {
@@ -44,13 +48,17 @@ const updateOrganization = async (c: Context) => {
     "organizationService",
   ) as OrganizationService;
 
-  const id = c.req.param("id");
+  try {
+    const id = c.req.param("id");
 
-  const organization = await organizationService.updateOrganization({
-    id: Number(id),
-  });
+    const organization = await organizationService.updateOrganization({
+      id: Number(id),
+    });
 
-  return c.json(organization, 200);
+    return c.json(organization, 200);
+  } catch (error) {
+    return c.json({ error: error }, 500);
+  }
 };
 
 const deleteOrganization = async (c: Context) => {
@@ -58,13 +66,17 @@ const deleteOrganization = async (c: Context) => {
     "organizationService",
   ) as OrganizationService;
 
-  const id = c.req.param("id");
+  try {
+    const id = c.req.param("id");
 
-  const organization = await organizationService.deleteOrganization({
-    id: Number(id),
-  });
+    await organizationService.deleteOrganization({
+      id: Number(id),
+    });
 
-  return c.json({}, 201);
+    return c.json({}, 201);
+  } catch (error) {
+    return c.json({ error: error }, 500);
+  }
 };
 
 export default {
