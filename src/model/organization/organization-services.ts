@@ -9,11 +9,7 @@ export interface IOrganizationServices {
 
   updateOrganization({ id }: { id: number }): Promise<Organization>;
 
-  deleteOrganization({
-    organization,
-  }: {
-    organization: Organization;
-  }): Promise<void>;
+  deleteOrganization({ id }: { id: number }): Promise<void>;
 
-  getOrganization({ name }: { name: string }): Promise<Organization>;
+  getOrganization({ id }: { id: number }): Promise<Organization>;
 }

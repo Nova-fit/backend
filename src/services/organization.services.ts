@@ -13,9 +13,7 @@ export class OrganizationService implements IOrganizationServices {
       throw new Error("Organization ID is required");
     }
 
-    const existingOrganization = await this.validateOrganization({
-      name: newOrganization.name!,
-    });
+    const existingOrganization = await this.validateById(newOrganization.id!);
 
     if (existingOrganization) {
       throw new Error("Organization already exists");
@@ -53,14 +51,8 @@ export class OrganizationService implements IOrganizationServices {
     return updatedOrganization;
   }
 
-  async deleteOrganization({
-    organization,
-  }: {
-    organization: Organization;
-  }): Promise<void> {
-    const existingOrganization = await this.validateOrganization({
-      name: organization.name!,
-    });
+  async deleteOrganization({ id }: { id: number }): Promise<void> {
+    const existingOrganization = await this.validateById(id);
 
     if (!existingOrganization) {
       throw new Error("Organization not found");
@@ -68,16 +60,12 @@ export class OrganizationService implements IOrganizationServices {
 
     await db
       .delete(organizations)
-      .where(eq(organizations.id, organization.id))
+      .where(eq(organizations.id, existingOrganization.id))
       .execute();
   }
 
-  async getOrganization({ name }: { name: string }): Promise<Organization> {
-    const [existingOrganization] = await db
-      .select()
-      .from(organizations)
-      .where(eq(organizations.name, name))
-      .execute();
+  async getOrganization({ id }: { id: number }): Promise<Organization> {
+    const existingOrganization = await this.validateById(id);
 
     if (!existingOrganization) {
       throw new Error("Organization not found");
@@ -98,23 +86,5 @@ export class OrganizationService implements IOrganizationServices {
     }
 
     return existingOrganization!;
-  }
-
-  private async validateOrganization({
-    name,
-  }: {
-    name: string;
-  }): Promise<boolean> {
-    const existingOrganization = await db
-      .select()
-      .from(organizations)
-      .where(eq(organizations.name, name))
-      .execute();
-
-    if (!existingOrganization) {
-      return true;
-    }
-
-    return false;
   }
 }

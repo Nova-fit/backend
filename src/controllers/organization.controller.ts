@@ -7,14 +7,14 @@ const getOrganization = async (c: Context) => {
     "organizationService",
   ) as OrganizationService;
 
-  const name = c.req.param("name");
+  const id = c.req.param("id");
 
-  if (!name) {
-    return c.json({ error: "Organization name is required" }, 400);
+  if (!id) {
+    return c.json({ error: "Organization id is required" }, 400);
   }
 
   const organization = await organizationService.getOrganization({
-    name,
+    id: Number(id),
   });
 
   if (!organization) return c.json({ error: "Organization not found" }, 404);
@@ -54,14 +54,17 @@ const updateOrganization = async (c: Context) => {
 };
 
 const deleteOrganization = async (c: Context) => {
-  const payload = c.get("jwtPayload");
-  const organizationService = c.get("organizationService");
+  const organizationService = c.get(
+    "organizationService",
+  ) as OrganizationService;
 
-  const organization = await organizationService.deleteOrganization(
-    payload.userId,
-  );
+  const id = c.req.param("id");
 
-  return c.json(organization, 200);
+  const organization = await organizationService.deleteOrganization({
+    id: Number(id),
+  });
+
+  return c.json({}, 201);
 };
 
 export default {
