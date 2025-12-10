@@ -2,12 +2,27 @@ import { NewOrganization } from "@/db/schema";
 import { OrganizationService } from "@/services";
 import { Context } from "hono";
 
-const getOrganization = async (c: Context) => {
-  const organizationService = c.get(
-    "organizationService",
-  ) as OrganizationService;
+/**
+ * Obtiene una instancia de OrganizationService del contexto.
+ * Evita la repetición de código en cada handler.
+ */
+const getOrgService = (c: Context) =>
+  c.get("organizationService") as OrganizationService;
 
-  const id = c.req.param("id");
+/**
+ * Valida que el parámetro id sea un entero positivo.
+ */
+const parseId = (id: string | undefined): number | null => {
+  if (!id) return null;
+  const parsed = Number(id);
+  if (Number.isNaN(parsed) || parsed <= 0) return null;
+  return parsed;
+};
+
+const getOrganization = async (c: Context) => {
+  const organizationService = getOrgService(c);
+
+  const id = parseId(c.req.param("id"));
 
   if (!id) {
     return c.json({ error: "Organization id is required" }, 400);
@@ -15,7 +30,7 @@ const getOrganization = async (c: Context) => {
 
   try {
     const organization = await organizationService.getOrganization({
-      id: Number(id),
+      id,
     });
 
     if (!organization) return c.json({ error: "Organization not found" }, 404);
@@ -27,9 +42,7 @@ const getOrganization = async (c: Context) => {
 };
 
 const createOrganization = async (c: Context) => {
-  const organizationService = c.get(
-    "organizationService",
-  ) as OrganizationService;
+  const organizationService = getOrgService(c);
   try {
     const newOrganization = (await c.req.json()) as NewOrganization;
 
@@ -44,15 +57,17 @@ const createOrganization = async (c: Context) => {
 };
 
 const updateOrganization = async (c: Context) => {
-  const organizationService = c.get(
-    "organizationService",
-  ) as OrganizationService;
+  const organizationService = getOrgService(c);
 
   try {
-    const id = c.req.param("id");
+    const id = parseId(c.req.param("id"));
+
+    if (!id) {
+      return c.json({ error: "Organization id is required" }, 400);
+    }
 
     const organization = await organizationService.updateOrganization({
-      id: Number(id),
+      id,
     });
 
     return c.json(organization, 200);
@@ -62,15 +77,16 @@ const updateOrganization = async (c: Context) => {
 };
 
 const deleteOrganization = async (c: Context) => {
-  const organizationService = c.get(
-    "organizationService",
-  ) as OrganizationService;
-
+  const organizationService = getOrgService(c);
   try {
-    const id = c.req.param("id");
+    const id = parseId(c.req.param("id"));
+
+    if (!id) {
+      return c.json({ error: "Organization id is required" }, 400);
+    }
 
     await organizationService.deleteOrganization({
-      id: Number(id),
+      id,
     });
 
     return c.json({}, 201);
