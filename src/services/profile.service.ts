@@ -1,12 +1,10 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { profiles } from "@/db/schema";
-import { IProfileInsert } from "@/types/profile.type";
-import { type IProfile } from "./../db/schema";
+import { NewProfile, Profile, profiles } from "@/db/schema";
 import { IProfileService } from "@/model/profile/profile-services.interface";
 
 export class ProfileService implements IProfileService {
-  async getProfile(userId: string): Promise<typeof IProfile | null> {
+  async getProfile(userId: string): Promise<Profile | null> {
     const [profile] = await db
       .select()
       .from(profiles)
@@ -17,7 +15,7 @@ export class ProfileService implements IProfileService {
     return profile;
   }
 
-  async saveProfile(profileData: IProfileInsert, userId: string) {
+  async saveProfile(profileData: NewProfile, userId: string) {
     await db.insert(profiles).values({
       userId,
       firstName: profileData.firstName,
@@ -29,7 +27,7 @@ export class ProfileService implements IProfileService {
     });
   }
 
-  async updateProfile(profileData: IProfileInsert, userId: string) {
+  async updateProfile(profileData: NewProfile, userId: string) {
     await db
       .update(profiles)
       .set({
