@@ -9,4 +9,10 @@ branchRouter.post("/", branchController.create);
 branchRouter.put("/:id", branchController.update);
 branchRouter.delete("/:id", branchController.remove);
 
+// Schedule routes
+branchRouter.post("/schedule", branchController.createSchedule);
+branchRouter.get("/:id/schedule", branchController.getSchedule);
+branchRouter.put("/schedule/:id", branchController.updateSchedule);
+branchRouter.delete("/schedule/:id", branchController.deleteSchedule);
+
 export default branchRouter;

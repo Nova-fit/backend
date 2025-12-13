@@ -1,4 +1,4 @@
-import { Branch, NewBranch } from "@/db/schema";
+import { Branch, NewBranch, NewBranchSchedule } from "@/db/schema";
 import { BranchServices } from "@/model";
 import { getService, KEY_BRANCH_SERVICE } from "@/utils/getServices";
 import { Context } from "hono";
@@ -42,10 +42,40 @@ const remove = async (c: Context) => {
   return c.json({ message: "Branch deleted successfully" }, 201);
 };
 
+const createSchedule = async (c: Context) => {
+  const dto: NewBranchSchedule = await c.req.json();
+  const result = await getBranchService(c).createBranchSchedule(dto);
+  return c.json(result, 201);
+};
+
+const getSchedule = async (c: Context) => {
+  const id = parseInt(c.req.param("id"), 10);
+  const result = await getBranchService(c).getBranchSchedule(id);
+  if (!result) return c.json({ message: "Schedule not found" }, 404);
+  return c.json(result);
+};
+
+const updateSchedule = async (c: Context) => {
+  const id = parseInt(c.req.param("id"), 10);
+  const dto: NewBranchSchedule = await c.req.json();
+  const result = await getBranchService(c).updateBranchSchedule(id, dto);
+  return c.json(result);
+};
+
+const deleteSchedule = async (c: Context) => {
+  const id = parseInt(c.req.param("id"), 10);
+  await getBranchService(c).deleteBranchSchedule(id);
+  return c.json({ message: "Schedule deleted successfully" }, 201);
+};
+
 export default {
   create,
   findAll,
   findById,
   update,
-  remove,
+  remove, // kept for backward compatibility if needed, though delete is standard
+  createSchedule,
+  getSchedule,
+  updateSchedule,
+  deleteSchedule,
 };
