@@ -1,26 +1,14 @@
 import { NewOrganization } from "@/db/schema";
-import { OrganizationService } from "@/services";
+import { IOrganizationServices } from "@/model";
+import { getService, KEY_ORGANIZATION_SERVICE } from "@/utils/getServices";
+import { parseId } from "@/utils/validateRequest";
 import { Context } from "hono";
 
-/**
- * Obtiene una instancia de OrganizationService del contexto.
- * Evita la repetición de código en cada handler.
- */
-const getOrgService = (c: Context) =>
-  c.get("organizationService") as OrganizationService;
-
-/**
- * Valida que el parámetro id sea un entero positivo.
- */
-const parseId = (id: string | undefined): number | null => {
-  if (!id) return null;
-  const parsed = Number(id);
-  if (Number.isNaN(parsed) || parsed <= 0) return null;
-  return parsed;
-};
-
 const getOrganization = async (c: Context) => {
-  const organizationService = getOrgService(c);
+  const organizationService = getService<IOrganizationServices>(
+    c,
+    KEY_ORGANIZATION_SERVICE,
+  );
 
   const id = parseId(c.req.param("id"));
 
@@ -42,7 +30,10 @@ const getOrganization = async (c: Context) => {
 };
 
 const createOrganization = async (c: Context) => {
-  const organizationService = getOrgService(c);
+  const organizationService = getService<IOrganizationServices>(
+    c,
+    KEY_ORGANIZATION_SERVICE,
+  );
   try {
     const newOrganization = (await c.req.json()) as NewOrganization;
 
@@ -57,7 +48,10 @@ const createOrganization = async (c: Context) => {
 };
 
 const updateOrganization = async (c: Context) => {
-  const organizationService = getOrgService(c);
+  const organizationService = getService<IOrganizationServices>(
+    c,
+    KEY_ORGANIZATION_SERVICE,
+  );
 
   try {
     const id = parseId(c.req.param("id"));
@@ -77,7 +71,11 @@ const updateOrganization = async (c: Context) => {
 };
 
 const deleteOrganization = async (c: Context) => {
-  const organizationService = getOrgService(c);
+  const organizationService = getService<IOrganizationServices>(
+    c,
+    KEY_ORGANIZATION_SERVICE,
+  );
+
   try {
     const id = parseId(c.req.param("id"));
 
