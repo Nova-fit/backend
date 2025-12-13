@@ -1,4 +1,9 @@
-import { Branch, NewBranch } from "@/db/schema";
+import {
+  Branch,
+  NewBranch,
+  BranchSchedule,
+  NewBranchSchedule,
+} from "@/db/schema";
 
 export interface BranchServices {
   create(branch: NewBranch): Promise<Branch>;
@@ -6,4 +11,11 @@ export interface BranchServices {
   findById(id: number): Promise<Branch | null>;
   update(id: number, data: Branch): Promise<Branch>;
   delete(id: number): Promise<void>;
+  createBranchSchedule(data: NewBranchSchedule): Promise<BranchSchedule>;
+  getBranchSchedule(id: number): Promise<BranchSchedule | null>;
+  updateBranchSchedule(
+    id: number,
+    data: NewBranchSchedule,
+  ): Promise<BranchSchedule>;
+  deleteBranchSchedule(id: number): Promise<void>;
 }
