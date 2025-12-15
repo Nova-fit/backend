@@ -105,8 +105,15 @@ export class TokenService {
         ),
       );
 
-    if (!session || session.isRevoked) {
-      throw new Error("Token revocado o inválido");
+    if (session && session.isRevoked) {
+      // REUSE DETECTION: Si intentan usar un token ya revocado, es posible robo.
+      // Invalidamos TODAS las sesiones del usuario por seguridad.
+      await this.revokeAllUserSessions(payload.userId);
+      throw new Error("Security Alert: Token reused. All sessions revoked.");
+    }
+
+    if (!session) {
+      throw new Error("Token inválido");
     }
 
     // Verificar expiración de sesión explícitamente (aunque JWT lo hace, DB es fuente de verdad)
@@ -125,5 +132,15 @@ export class TokenService {
       .update(sessions)
       .set({ isRevoked: true })
       .where(eq(sessions.tokenHash, token));
+  }
+
+  /**
+   * Revoca TODAS las sesiones de un usuario (Security fallback)
+   */
+  static async revokeAllUserSessions(userId: string): Promise<void> {
+    await db
+      .update(sessions)
+      .set({ isRevoked: true })
+      .where(eq(sessions.userId, userId));
   }
 }

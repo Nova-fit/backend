@@ -7,7 +7,7 @@ import { eq } from "drizzle-orm";
 
 import { profiles, users } from "@/db/schema";
 import { IAuthServices } from "@/model/auth/auth-services.interface";
-import { AuthResponse } from "@/model/types";
+import { AuthResponse, AuthTokens } from "@/model/types";
 
 export class AuthServices implements IAuthServices {
   constructor() {}
@@ -87,5 +87,26 @@ export class AuthServices implements IAuthServices {
 
   async logout(refreshToken: string): Promise<void> {
     await TokenService.revokeToken(refreshToken);
+  }
+
+  async refreshToken(
+    token: string,
+    userAgent?: string,
+    ipAddress?: string,
+  ): Promise<AuthTokens> {
+    const payload = await TokenService.verifyRefreshToken(token);
+
+    // ROTATION: Revoke the used token immediately
+    await TokenService.revokeToken(token);
+
+    // Generate new tokens
+    const newTokens = await TokenService.generateTokens(
+      payload.userId,
+      payload.email,
+      userAgent,
+      ipAddress,
+    );
+
+    return newTokens;
   }
 }
