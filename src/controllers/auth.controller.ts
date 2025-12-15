@@ -22,11 +22,32 @@ export const register = async (c: Context) => {
 export const login = async (c: Context) => {
   const { email, password } = await c.req.json();
   const authService = c.get('authService');
-  const { user, tokens } = await authService.login(email, password);
+  
+  const userAgent = c.req.header('user-agent');
+  const ipAddress = c.req.header('x-forwarded-for') || c.req.header('cf-connecting-ip'); // Basic IP detection
+
+  const { user, tokens } = await authService.login(email, password, userAgent, ipAddress);
   return c.json({ tokens, user }, 200);
 };
+
+export const logout = async (c: Context) => {
+  try {
+    const { refreshToken } = await c.req.json();
+    if (!refreshToken) {
+        return c.json({ message: "Refresh token requerido" }, 400);
+    }
+    
+    const authService = c.get('authService');
+    await authService.logout(refreshToken);
+    
+    return c.json({ message: "Sesión cerrada exitosamente" }, 200);
+  } catch (error) {
+    return c.json({ message: "Error al cerrar sesión" }, 500);
+  }
+}
 
 export default {
   register,
   login,
+  logout
 };
