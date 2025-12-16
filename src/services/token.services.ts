@@ -2,9 +2,9 @@ import { sign, verify } from "hono/jwt";
 import { config } from "@/config/env";
 import { db } from "@/db";
 
-import type { AuthTokens, JWTPayload } from "@/types";
+import type { AuthTokens, JWTPayload } from "@/model/types";
 import { sessions } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 export class TokenService {
   /**
@@ -13,6 +13,8 @@ export class TokenService {
   static async generateTokens(
     userId: string,
     email: string,
+    userAgent?: string,
+    ipAddress?: string,
   ): Promise<AuthTokens> {
     const now = Math.floor(Date.now() / 1000);
 
@@ -42,10 +44,11 @@ export class TokenService {
 
     // Guardar refresh token en la base de datos
     await db.insert(sessions).values({
-      expiresAt: new Date(now + config.REFRESH_TOKEN_EXPIRES_IN * 1000),
+      expiresAt: new Date((now + config.REFRESH_TOKEN_EXPIRES_IN) * 1000),
       userId,
-      tokenHash: refreshToken,
-      userAgent: "unknown",
+      tokenHash: refreshToken, // En producción idealmente hashearlo, pero por ahora guardamos el token
+      userAgent: userAgent || "unknown",
+      ipAddress: ipAddress || null,
       createdAt: new Date(),
       isRevoked: false,
     });
@@ -91,17 +94,53 @@ export class TokenService {
       throw new Error("Tipo de token inválido");
     }
 
-    // Verificar que el refresh token esté en nuestra lista válida
-    const isValid = await db
+    // Verificar que el refresh token esté en nuestra lista válida y no revocado
+    const [session] = await db
       .select()
       .from(sessions)
-      .where(eq(sessions.userId, payload.userId))
-      .then((rows) => rows.length > 0);
+      .where(
+        and(
+          eq(sessions.tokenHash, token),
+          eq(sessions.userId, payload.userId),
+        ),
+      );
 
-    if (!isValid) {
-      throw new Error("Token inválido o expirado");
+    if (session && session.isRevoked) {
+      // REUSE DETECTION: Si intentan usar un token ya revocado, es posible robo.
+      // Invalidamos TODAS las sesiones del usuario por seguridad.
+      await this.revokeAllUserSessions(payload.userId);
+      throw new Error("Security Alert: Token reused. All sessions revoked.");
+    }
+
+    if (!session) {
+      throw new Error("Token inválido");
+    }
+
+    // Verificar expiración de sesión explícitamente (aunque JWT lo hace, DB es fuente de verdad)
+    if (new Date() > session.expiresAt) {
+      throw new Error("Sesión expirada");
     }
 
     return payload;
+  }
+
+  /**
+   * Revoca un refresh token
+   */
+  static async revokeToken(token: string): Promise<void> {
+    await db
+      .update(sessions)
+      .set({ isRevoked: true })
+      .where(eq(sessions.tokenHash, token));
+  }
+
+  /**
+   * Revoca TODAS las sesiones de un usuario (Security fallback)
+   */
+  static async revokeAllUserSessions(userId: string): Promise<void> {
+    await db
+      .update(sessions)
+      .set({ isRevoked: true })
+      .where(eq(sessions.userId, userId));
   }
 }

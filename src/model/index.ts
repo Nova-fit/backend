@@ -3,3 +3,4 @@ export { IProfileService } from "./profile/profile-services.interface";
 export { IOrganizationServices } from "./organization/organization-services";
 export { BranchServices } from "./branch/branch-services.interface";
 export { UserBranchServices } from "./user-branch/user-branch-services.interface";
+export { IMachineService } from "./machines/machines.interface";

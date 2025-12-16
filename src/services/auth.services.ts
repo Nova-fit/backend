@@ -1,13 +1,13 @@
 import { UserWithoutPassword } from "@/model/user.model";
-import { AuthResponse } from "@/types";
+
 import { hashPassword, verifyPassword } from "@/utils/password";
 import { TokenService } from "./token.services";
 import { db } from "@/db";
 import { eq } from "drizzle-orm";
 
-import { users, profiles } from "@/db/schema";
+import { profiles, users } from "@/db/schema";
 import { IAuthServices } from "@/model/auth/auth-services.interface";
-
+import { AuthResponse, AuthTokens } from "@/model/types";
 
 export class AuthServices implements IAuthServices {
   constructor() {}
@@ -19,43 +19,47 @@ export class AuthServices implements IAuthServices {
     const hashedPassword = await hashPassword(input.password);
 
     try {
-        const [newUser] = await db
-      .insert(users)
-      .values({
-        email: input.email,
-        passwordHash: hashedPassword,
-      })
-      .returning({
-        id: users.id,
-        email: users.email,
-        isActive: users.isActive,
-        createdAt: users.createdAt,
-        updatedAt: users.updatedAt,
-      });
+      const [newUser] = await db
+        .insert(users)
+        .values({
+          email: input.email,
+          passwordHash: hashedPassword,
+        })
+        .returning({
+          id: users.id,
+          email: users.email,
+          isActive: users.isActive,
+          createdAt: users.createdAt,
+          updatedAt: users.updatedAt,
+        });
 
       if (!newUser) {
         throw new Error("Error al crear el usuario");
       }
 
       const [newProfile] = await db
-      .insert(profiles)
-      .values({
-        userId: newUser.id,
-      }).returning();
-
+        .insert(profiles)
+        .values({
+          userId: newUser.id,
+        }).returning();
 
       if (!newProfile) {
         throw new Error("Error al crear el perfil");
       }
 
-    return newUser;
+      return newUser;
     } catch (error) {
       throw new Error("Error al crear el usuario");
     }
   }
 
-  async login(email: string, password: string): Promise<AuthResponse> {
-    const [user] = (await db.select().from(users).where(eq(users.email, email)));
+  async login(
+    email: string,
+    password: string,
+    userAgent?: string,
+    ipAddress?: string,
+  ): Promise<AuthResponse> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
     if (!user) {
       throw new Error("Usuario no encontrado");
     }
@@ -65,7 +69,12 @@ export class AuthServices implements IAuthServices {
       throw new Error("Contraseña incorrecta");
     }
 
-    const token = await TokenService.generateTokens(user.id, email);
+    const token = await TokenService.generateTokens(
+      user.id,
+      email,
+      userAgent,
+      ipAddress,
+    );
 
     const { passwordHash: _, ...userWithoutPassword } = user;
 
@@ -74,5 +83,30 @@ export class AuthServices implements IAuthServices {
       user: userWithoutPassword,
       message: "Inicio de sesión exitoso",
     };
+  }
+
+  async logout(refreshToken: string): Promise<void> {
+    await TokenService.revokeToken(refreshToken);
+  }
+
+  async refreshToken(
+    token: string,
+    userAgent?: string,
+    ipAddress?: string,
+  ): Promise<AuthTokens> {
+    const payload = await TokenService.verifyRefreshToken(token);
+
+    // ROTATION: Revoke the used token immediately
+    await TokenService.revokeToken(token);
+
+    // Generate new tokens
+    const newTokens = await TokenService.generateTokens(
+      payload.userId,
+      payload.email,
+      userAgent,
+      ipAddress,
+    );
+
+    return newTokens;
   }
 }
