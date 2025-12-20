@@ -23,14 +23,13 @@
       "@/config/*": ["./config/*"],
       "@/controllers/*": ["./controllers/*"],
       "@/middleware/*": ["./middleware/*"],
-      "@/models/*": ["./models/*"],
+      "@/models/*": ["./model/*"],
       "@/routes/*": ["./routes/*"],
       "@/services/*": ["./services/*"],
       "@/types/*": ["./types/*"],
-      "@/utils/*": ["./utils/*"]
-    }
+      "@/utils/*": ["./utils/*"],
+    },
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
-
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"],
 }

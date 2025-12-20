@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm";
+import { or, relations } from "drizzle-orm";
 import {
   pgTable,
   serial,
@@ -117,6 +117,9 @@ export const organizations = pgTable("organizations", {
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
 });
 
 // ==================== 7. BRANCHES TABLE (Sucursales) ====================
@@ -281,6 +284,7 @@ export const rolePermissionsRelations = relations(
 // Organizations relations
 export const organizationsRelations = relations(organizations, ({ many }) => ({
   branches: many(branches),
+  users: many(users),
 }));
 
 // Branches relations

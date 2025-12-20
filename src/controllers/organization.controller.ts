@@ -1,5 +1,5 @@
 import { NewOrganization } from "@/db/schema";
-import { IOrganizationServices } from "@/model";
+import { IOrganizationServices, JWTPayload } from "@/model";
 import { getService, KEY_ORGANIZATION_SERVICE } from "@/utils/getServices";
 import { parseId } from "@/utils/validateRequest";
 import { Context } from "hono";
@@ -9,16 +9,15 @@ const getOrganization = async (c: Context) => {
     c,
     KEY_ORGANIZATION_SERVICE,
   );
+  const payload: JWTPayload = c.get("jwtPayload");
 
-  const id = parseId(c.req.param("id"));
-
-  if (!id) {
-    return c.json({ error: "Organization id is required" }, 400);
+  if (!payload) {
+    return c.json({ error: "Organization user is required" }, 400);
   }
 
   try {
     const organization = await organizationService.getOrganization({
-      id,
+      payload,
     });
 
     if (!organization) return c.json({ error: "Organization not found" }, 404);
@@ -37,13 +36,20 @@ const createOrganization = async (c: Context) => {
   try {
     const newOrganization = (await c.req.json()) as NewOrganization;
 
+    const payload: JWTPayload = c.get("jwtPayload");
+
+    if (!payload) {
+      return c.json({ error: "Organization user is required" }, 400);
+    }
+
     const organization = await organizationService.createOrganization({
       newOrganization,
+      userId: payload.userId,
     });
 
     return c.json(organization, 201);
   } catch (error) {
-    return c.json({ error: error }, 500);
+    return c.json({ error }, 500);
   }
 };
 
