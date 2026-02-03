@@ -8,7 +8,7 @@
     "db:generate": "npx drizzle-kit generate",
     "db:migrate": "npx drizzle-kit migrate",
     "db:push": "npx drizzle-kit push",
-    "db:seed": "npx drizzle-kit seed",
+    "db:seed": "tsx src/db/seed.ts",
     "db:studio": "npx drizzle-kit studio"
   },
   "dependencies": {
