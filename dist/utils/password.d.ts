@@ -1,0 +1,9 @@
+export declare function hashPassword(password: string): Promise<string>;
+export declare function verifyPassword(password: string, hash: string): Promise<boolean>;
+export declare function validatePasswordStrength(password: string): {
+    isValid: boolean;
+    errors: string[];
+    score: number;
+};
+export declare function generateSecurePassword(length?: number): string;
+//# sourceMappingURL=password.d.ts.map

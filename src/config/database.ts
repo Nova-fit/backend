@@ -121,7 +121,8 @@ export async function initializeDatabase(): Promise<void> {
       // Crear usuario de prueba (contraseña: "password123")
       await db.createUser({
         email: 'test@example.com',
-        password: '$2b$12$LQv3c1yqBWVHxkd0LHAkCukEyeIZJVZhLUJZyJq7.vHV7qrUqJ0Vm' // password123
+        password: '$2b$12$LQv3c1yqBWVHxkd0LHAkCukEyeIZJVZhLUJZyJq7.vHV7qrUqJ0Vm', // password123
+        isActive: true
       })
 
       console.log('✅ Base de datos inicializada con usuario de prueba')
